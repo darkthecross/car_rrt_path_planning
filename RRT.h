@@ -31,8 +31,8 @@ namespace crpp{
         bool expandTree(const std::vector<double>& target);
         bool expandFromNode(TreeNode * fromNode, TreeNode * tarNode);
         bool collision(const std::vector<double>& target);
-        void speak();
-        void print_tree(TreeNode* r);
+        //void speak();
+        //void print_tree(TreeNode* r);
         //void _deleteTree(TreeNode * tn);
         ~RRT();
     };

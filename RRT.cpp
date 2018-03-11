@@ -77,6 +77,7 @@ double RRT::nodeDistance(const TreeNode* node1, const TreeNode* node2) {
     return std::sqrt(dst);
 }
 
+/*
 void RRT::speak() {
     print_tree(this->root);
 }
@@ -90,3 +91,4 @@ void RRT::print_tree(TreeNode * r) {
         print_tree(r->children[i]);
     }
 }
+*/
