@@ -14,20 +14,6 @@ void displayTree( Mat & M1, kdTreeNode<vector<double>> * rt , vector<double> lb,
     {
         return;
     }
-    for(auto i :rt->val)
-    {
-        cout<<i<<" ";
-    }
-    cout<<endl;
-    for(auto i :lb)
-    {
-        cout<<i<<" ";
-    }
-    for(auto i :ub)
-    {
-        cout<<i<<" ";
-    }
-    cout<<endl;
     Point p(rt->val[0]*100, rt->val[1]*100);
     circle(M1, p, 3, Scalar(255, 0, 0));
     Point p1(lb[0]*100+1, lb[1]*100+1);
@@ -66,6 +52,7 @@ int main()
         double yy = double(rand()%60)/10;
         exp1.push_back(xx);
         exp1.push_back(yy);
+        kdTreeNode<vector<double>> * nnNode = tr.findNearest (exp1);
         tr.insert(exp1);
         Mat M(602, 602, CV_8UC3, Scalar(0,0,0));
         vector<double> lb, ub;
@@ -75,6 +62,13 @@ int main()
             ub.push_back(6);
         }
         displayTree(M, tr.root, lb, ub, 0);
+        if(nnNode != NULL)
+        {
+            Point nn(nnNode->val[0]*100+1, nnNode->val[1]*100+1);
+            circle(M, nn, 3, Scalar(255, 255, 255));
+            Point nn1(xx*100+1, yy*100+1);
+            circle(M, nn1, 3, Scalar(0, 255, 255));
+        }
         imshow( "Display window", M );
         imwrite(string("imgs/")+to_string(i)+string(".jpg"), M);
         waitKey(0);

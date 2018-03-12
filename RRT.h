@@ -4,37 +4,21 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
+#include "kdTree.h"
 
 namespace crpp{
 
-    typedef struct treenode{
-        std::vector<double> coordinate;
-        treenode* parent;
-        std::vector<treenode*> children;
-        treenode(int dim) {
-            this->coordinate = std::vector<double>(dim, 0);
-            this->parent = NULL;
-            this->children = std::vector<treenode *>();
-        }
-    }TreeNode;
-
-    class RRT{
+    template<class T, int N>
+    class RRT: public kdTree<T, N>{
     private:
-        int dim;
         double stepSize;
     public:
-        TreeNode * root;
         RRT();
-        RRT(std::vector<double> root_coord);
-        TreeNode * nearestNode( TreeNode * curNode, TreeNode * target );
-        double nodeDistance(const TreeNode* node1, const TreeNode* node2);
-        bool expandTree(const std::vector<double>& target);
-        bool expandFromNode(TreeNode * fromNode, TreeNode * tarNode);
-        bool collision(const std::vector<double>& target);
-        //void speak();
-        //void print_tree(TreeNode* r);
-        //void _deleteTree(TreeNode * tn);
-        ~RRT();
+        RRT(T root_coord);
+        double nodeDistance(const kdTreeNode<T>* node1, const kdTreeNode<T>* node2);
+        bool expandTree(T target);
+        bool expandFromNode(kdTreeNode<T> * fromNode, kdTreeNode<T> * tarNode);
+        bool collision(T target);
     };
 }
 

@@ -2,61 +2,43 @@
 
 using namespace crpp;
 
-RRT::RRT() {
-    this->dim = 2;
+template<class T, int N>
+RRT<T, N>::RRT() {
     this->stepSize = 0.1;
 }
 
-RRT::RRT(std::vector<double> root_coord) {
-    this->dim = 2;
+template<class T, int N>
+RRT<T, N>::RRT(T root_coord) {
     this->stepSize = 0.1;
-    this->root = new TreeNode(this->dim);
-    this->root->coordinate = root_coord;
+    this->root = new kdTreeNode<T>(root_coord);
 }
 
-
-RRT::~RRT() {}
-
-TreeNode * RRT::nearestNode( TreeNode * curNode, TreeNode * target ){
-    if(curNode == NULL) {
-        return NULL;
-    }
-    double curRec = nodeDistance( curNode, target );
-    TreeNode * nodeRec = curNode;
-    for(int i = 0; i<curNode->children.size(); i++) {
-        TreeNode * tmpNode = nearestNode( curNode->children[i], target );
-        double curDist = nodeDistance( tmpNode, target );
-        if(curDist < curRec) {
-            curRec = curDist;
-            nodeRec = tmpNode;
-        }
-    }
-    return nodeRec;
-}
-
-bool RRT::expandTree(const std::vector<double>& target) {
+template<class T, int N>
+bool RRT<T, N>::expandTree(T target) {
     // find nearest node
-    TreeNode * tarNode = new TreeNode(this->dim);
-    tarNode->coordinate = target;
-    TreeNode * nearest = nearestNode(this->root, tarNode);
+    kdTreeNode<T> * nearest =  kdTree<T,N>::findNearest(target);
+    kdTreeNode<T> * tarNode = new kdTreeNode<T>(target);
     return expandFromNode(nearest, tarNode);
 }
 
-bool RRT::expandFromNode(TreeNode * fromNode, TreeNode * tarNode) {
+template<class T, int N>
+bool RRT<T, N>::expandFromNode(kdTreeNode<T> * fromNode, kdTreeNode<T> * tarNode) {
     double totalDist = nodeDistance(fromNode, tarNode);
     if(totalDist < this->stepSize) {
-        tarNode->parent = fromNode;
-        fromNode->children.push_back(tarNode);
+        kdTreeNode<T> * tmpNode = kdTree<T,N>::insert(tarNode->val);
+        tmpNode->parent = fromNode;
+        fromNode->children.push_back(tmpNode);
         return true;
     } else {
-        TreeNode * tmpNode = new TreeNode(this->dim);
-        for(int i = 0; i<tarNode->coordinate.size(); i++)
+        T tmpNodeVal;
+        for(int i = 0; i<N; i++)
         {
-            tmpNode->coordinate[i] = fromNode->coordinate[i] + (tarNode->coordinate[i] - fromNode->coordinate[i]) * this->stepSize / totalDist;
+            tmpNodeVal.push_back( fromNode->val[i] + (tarNode->val[i] - fromNode->val[i]) * this->stepSize / totalDist );
         }
-        if(this->collision(tmpNode->coordinate)) {
+        if(this->collision(tmpNodeVal)) {
             return false;
         } else {
+            kdTreeNode<T> * tmpNode = kdTree<T,N>::insert(tmpNodeVal);
             tmpNode->parent = fromNode;
             fromNode->children.push_back(tmpNode);
             return expandFromNode(tmpNode, tarNode);
@@ -64,27 +46,31 @@ bool RRT::expandFromNode(TreeNode * fromNode, TreeNode * tarNode) {
     }
 }
 
-bool RRT::collision(const std::vector<double>& target) {
+template<class T, int N>
+bool RRT<T, N>::collision(T target) {
     return false;
 }
 
-double RRT::nodeDistance(const TreeNode* node1, const TreeNode* node2) {
+template<class T, int N>
+double RRT<T, N>::nodeDistance(const kdTreeNode<T>* node1, const kdTreeNode<T>* node2) {
     double dst = 0;
-    for(int i = 0; i<node1->coordinate.size(); i++)
+    for(int i = 0; i<N; i++)
     {
-        dst += (node1->coordinate[i] - node2->coordinate[i]) * (node1->coordinate[i] - node2->coordinate[i]);
+        dst += (node1->val[i] - node2->val[i]) * (node1->val[i] - node2->val[i]);
     }
     return std::sqrt(dst);
 }
+
+template class RRT<std::vector<double>, 2>;
 
 /*
 void RRT::speak() {
     print_tree(this->root);
 }
 
-void RRT::print_tree(TreeNode * r) {
+void RRT::print_tree(kdTreeNode<T> * r) {
     for(int i = 0; i<this->dim; i++) {
-        std::cout<<r->coordinate[i]<<" ";
+        std::cout<<r->val[i]<<" ";
     }
     std::cout<<std::endl;
     for(int i = 0; i<r->children.size(); i++) {

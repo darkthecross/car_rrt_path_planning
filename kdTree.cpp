@@ -3,10 +3,11 @@
 using namespace crpp;
 
 template <class T, int N>
-void kdTree<T, N>::insert(T newVal){
+kdTreeNode<T> * kdTree<T, N>::insert(T newVal){
     if(this->root == NULL)
     {
         this->root = new kdTreeNode<T>(newVal);
+        return this->root;
     }
     else
     {
@@ -26,8 +27,8 @@ kdTreeNode<T> * kdTree<T, N>::findNearest (T newVal)
         T lower, upper;
         for(int i = 0; i<N; i++)
         {
-            lower[i] = -std::numeric_limits<double>::max();
-            upper[i] = std::numeric_limits<double>::max();
+            lower.push_back(-std::numeric_limits<double>::max());
+            upper.push_back(std::numeric_limits<double>::max());
         }
         return findNearestHelper(newVal, root, lower, upper, std::numeric_limits<double>::max(), 0);
     }
@@ -37,6 +38,10 @@ kdTreeNode<T> * kdTree<T, N>::findNearest (T newVal)
 template <class T, int N>
 kdTreeNode<T> * kdTree<T, N>::findNearestHelper (T newVal, kdTreeNode<T> * curNode, T lowerB, T upperB, double cur_min, int dps)
 {
+    if(curNode == NULL)
+    {
+        return NULL;
+    }
     double curDist = NdDist(newVal, curNode->val);
     if(lowerBoundInRange(newVal, lowerB, upperB) >= cur_min)
     {
@@ -55,25 +60,25 @@ kdTreeNode<T> * kdTree<T, N>::findNearestHelper (T newVal, kdTreeNode<T> * curNo
     }
     else
     {
-        T lowerB1 = lowerB;
+        T lowerB1(lowerB);
         lowerB1[dps%N] = curNode->val[dps%N];
-        T upperB1 = upperB;
+        T upperB1(upperB);
         upperB1[dps%N] = curNode->val[dps%N];
         double cur_min1 = std::min(sqrt(curDist), cur_min);
         if(curNode -> left == NULL)
         {
-            kdTreeNode<T> * N1 = findNearestHelper (newVal, curNode->right, lowerB, upperB1, cur_min1, dps+1);
+            kdTreeNode<T> * N1 = findNearestHelper (newVal, curNode->right, lowerB1, upperB, cur_min1, dps+1);
             return selectNN(newVal, N1, curNode);
         }
         else if(curNode -> right == NULL)
         {
-            kdTreeNode<T> * N1 = findNearestHelper (newVal, curNode->right, lowerB1, upperB, cur_min1, dps+1);
+            kdTreeNode<T> * N1 = findNearestHelper (newVal, curNode->left, lowerB, upperB1, cur_min1, dps+1);
             return selectNN(newVal, N1, curNode);
         }
         else
         {
-            kdTreeNode<T> * N1 = findNearestHelper (newVal, curNode->right, lowerB, upperB1, cur_min1, dps+1);
-            kdTreeNode<T> * N2 = findNearestHelper (newVal, curNode->right, lowerB1, upperB, cur_min1, dps+1);
+            kdTreeNode<T> * N1 = findNearestHelper (newVal, curNode->right, lowerB1, upperB, cur_min1, dps+1);
+            kdTreeNode<T> * N2 = findNearestHelper (newVal, curNode->left, lowerB, upperB1, cur_min1, dps+1);
             kdTreeNode<T> * N1N2 = selectNN(newVal, N1, N2);
             return selectNN(newVal, curNode, N1N2);
         }
@@ -81,7 +86,7 @@ kdTreeNode<T> * kdTree<T, N>::findNearestHelper (T newVal, kdTreeNode<T> * curNo
 }
 
 template <class T, int N>
-void kdTree<T, N>::insertHelper(T newVal, kdTreeNode<T> * subTreeRoot, int dps)
+kdTreeNode<T> * kdTree<T, N>::insertHelper(T newVal, kdTreeNode<T> * subTreeRoot, int dps)
 {
     int cd = dps % N;
     if(subTreeRoot->val[cd] < newVal[cd])
@@ -89,10 +94,11 @@ void kdTree<T, N>::insertHelper(T newVal, kdTreeNode<T> * subTreeRoot, int dps)
         if(subTreeRoot->right == NULL)
         {
             subTreeRoot->right = new kdTreeNode<T>(newVal);
+            return subTreeRoot->right;
         }
         else
         {
-            insertHelper(newVal, subTreeRoot->right, dps+1);
+            return insertHelper(newVal, subTreeRoot->right, dps+1);
         }
     }
     else
@@ -100,10 +106,11 @@ void kdTree<T, N>::insertHelper(T newVal, kdTreeNode<T> * subTreeRoot, int dps)
         if(subTreeRoot->left == NULL)
         {
             subTreeRoot->left = new kdTreeNode<T>(newVal);
+            return subTreeRoot->left;
         }
         else
         {
-            insertHelper(newVal, subTreeRoot->left, dps+1);
+            return insertHelper(newVal, subTreeRoot->left, dps+1);
         }
     }
 }
@@ -114,7 +121,7 @@ double kdTree<T, N>::lowerBoundInRange(T newVal, T lower, T upper)
     T possibleNN;
     for(int i = 0; i<N; i++)
     {
-        possibleNN[i] = (newVal[i]<lower[i])?(lower[i]):(newVal[i]>upper[i]?(upper[i]):(newVal[i]));
+        possibleNN.push_back((newVal[i]<lower[i])?(lower[i]):(newVal[i]>upper[i]?(upper[i]):(newVal[i])));
     }
     return NdDist(newVal, possibleNN);
 }
