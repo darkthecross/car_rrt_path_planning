@@ -61,20 +61,4 @@ double RRT<T, N>::nodeDistance(const kdTreeNode<T>* node1, const kdTreeNode<T>* 
     return std::sqrt(dst);
 }
 
-template class RRT<std::vector<double>, 2>;
-
-/*
-void RRT::speak() {
-    print_tree(this->root);
-}
-
-void RRT::print_tree(kdTreeNode<T> * r) {
-    for(int i = 0; i<this->dim; i++) {
-        std::cout<<r->val[i]<<" ";
-    }
-    std::cout<<std::endl;
-    for(int i = 0; i<r->children.size(); i++) {
-        print_tree(r->children[i]);
-    }
-}
-*/
+template class crpp::RRT<std::vector<double>, 2>;

@@ -10,6 +10,11 @@ set(OpenCV_DIR /usr/local/share/OpenCV)
 
 add_executable(rrt_test RRT_test.cpp)
 add_executable(kdTree_test kdTree_test.cpp)
+add_executable(localplanner_test localplanner_test.cpp)
+
 find_package( OpenCV REQUIRED )
+
 target_link_libraries(kdTree_test libkdtree ${OpenCV_LIBS})
 target_link_libraries(rrt_test librrt libkdtree ${OpenCV_LIBS})
+
+target_link_libraries(localplanner_test ${OpenCV_LIBS})
