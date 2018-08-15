@@ -12,7 +12,7 @@ set(OpenCV_DIR /usr/local/share/OpenCV)
 add_executable(rrt_test RRT_test.cpp)
 add_executable(kdTree_test kdTree_test.cpp)
 add_executable(localplanner_test localplanner_test.cpp)
-add_executable(car_rrt_test localplanner_test.cpp)
+add_executable(car_rrt_test car_rrt_test.cpp)
 
 find_package( OpenCV REQUIRED )
 

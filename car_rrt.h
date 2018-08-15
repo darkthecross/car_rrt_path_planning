@@ -2,33 +2,17 @@
 #define CAR_RRT_H
 
 #include <cmath>
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <memory>
-#include <limits>
 #include <cstdlib>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <opencv2/opencv.hpp>
+#include <queue>
+#include <vector>
 
 #define PI 3.1415926535897932
 
 namespace crpp {
-
-double round_to_pi(const double raw_theta) {
-  double tmp_theta = raw_theta;
-  while (tmp_theta < -PI) {
-    tmp_theta += 2 * PI;
-  }
-  while (tmp_theta > PI) {
-    tmp_theta -= 2 * PI;
-  }
-  return tmp_theta;
-}
-
-double random_ranged(double lower, double upper)
-{
-    double f = (double)rand() / RAND_MAX;
-    return lower + f * (upper - lower);
-}
 
 typedef struct car_state {
   double x;
@@ -39,26 +23,43 @@ typedef struct car_state {
     y = yy;
     theta = tt;
   }
+  bool operator==(const car_state other) {
+    return other.x == this->x && other.y == this->y &&
+           other.theta == this->theta;
+  }
 } CarState;
 
 typedef struct car_state_node {
   CarState state;
-  car_state_node * parent;
+  car_state_node *parent;
   std::vector<car_state_node *> children;
   double distFromRoot;
   car_state_node() {
-      parent = nullptr;
+    parent = nullptr;
     state = CarState(0, 0, 0);
     children = std::vector<car_state_node *>();
     distFromRoot = 0;
   }
   car_state_node(CarState cs) {
-      parent = nullptr;
+    parent = nullptr;
     state = cs;
     children = std::vector<car_state_node *>();
     distFromRoot = 0;
   }
 } CarStateNode;
+
+class mycomparison {
+  bool reverse;
+
+public:
+  mycomparison(const bool &revparam = false) { reverse = revparam; }
+  bool operator()(const CarStateNode *lhs, const CarStateNode *rhs) const {
+    if (reverse)
+      return (lhs->distFromRoot > rhs->distFromRoot);
+    else
+      return (lhs->distFromRoot > rhs->distFromRoot);
+  }
+};
 
 class CRRT {
 private:
@@ -73,18 +74,23 @@ private:
   // map size: 1000 * 1000
   // map coordinate: [-10, 10]
   // default: empty
+  // avaliable: 1; block: 0
   std::vector<std::vector<bool>> environment_map;
-  CarStateNode * root;
+  CarStateNode *root;
   std::vector<CarStateNode *> allTreeNodes;
+  cv::Mat debugMap;
 
 public:
   CRRT();
+  cv::Point stateToCVPoint(CarState tmpState);
+  double round_to_mp_pi(const double raw_theta);
+  double random_range(double lower, double upper);
   std::vector<CarState> localPlanner(const CarState start, const CarState end,
                                      const double rmin,
                                      const double resolution);
   void initiateMapWithImage(const cv::Mat mapImage);
   void setStartEndStates(const CarState start_state, const CarState end_state);
-  bool expandTree(const CarState target);
+  CarStateNode * expandTree(const CarState target);
   std::vector<CarState> planPath();
   bool localPathAvailable(const std::vector<CarState> localPath);
 };
